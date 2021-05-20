@@ -7,6 +7,7 @@ import Form from 'react-bootstrap/Form';
 import useGetTravellingData from '../GetDataHook';
 import { formatDateTime, getSupportedCurrencies, handleError } from '../utils';
 import * as api from '../api';
+import styles from '../pension.module.css';
 import {
   mockDoctors,
   mockExchangeRates,
@@ -26,7 +27,7 @@ class PensionCalculation extends React.Component {
     },
   };
 
-  componentDidMount = () => {};
+  componentDidMount = () => {console.log("styles", styles)};
 
   componentDidUpdate(prevProps, prevState) {}
 
@@ -38,6 +39,15 @@ class PensionCalculation extends React.Component {
       handleError(e);
     }
   };
+
+  setPersonalDetailState = (key, value) => {
+    this.setState(prevState => ({
+      personalDetail: {
+        ...prevState.personalDetail,
+        [key]: value
+      }  
+    }))
+  }
 
   addError = (id, error) => {
     if (document.getElementById(id).children.length > 2) {
@@ -74,13 +84,7 @@ class PensionCalculation extends React.Component {
               placeholder="Enter name"
               onChange={(e) => {
                 const name = e.target.value;
-                const { personalDetail } = this.state;
-                this.setState(prevState => ({
-                  personalDetail: {
-                    ...prevState.personalDetail,
-                    name: name
-                  }  
-                }))
+                this.setPersonalDetailState('name', name);
               }}
             />
           </Form.Group>
@@ -92,14 +96,7 @@ class PensionCalculation extends React.Component {
               placeholder="Enter amount"
               onChange={(e) => {
                 const amount = e.target.value;
-                const { personalDetail } = this.state;
-                
-                this.setState(prevState => ({
-                  personalDetail: {
-                    ...prevState.personalDetail,
-                    amount: amount
-                  }  
-                }))
+                this.setPersonalDetailState('amount', amount);
               }}
             />
           </Form.Group>
@@ -111,14 +108,7 @@ class PensionCalculation extends React.Component {
               defaultValue="Choose..."
               onChange={(e) => {
                 const age = e.target.value;
-                const { personalDetail } = this.state;
-                
-                this.setState(prevState => ({
-                  personalDetail: {
-                    ...prevState.personalDetail,
-                    age: age
-                  }  
-                }))
+                this.setPersonalDetailState('age', age);
               }}
             >
               <option>Choose...</option>
@@ -131,14 +121,7 @@ class PensionCalculation extends React.Component {
           <Form.Group
             id="smokerCheck"
             controlId="smokerInput"
-            style={{
-              fontFamily: 'Arial, Helvetica, sans-serif',
-              fontWeight: 'bold',
-              borderRadius: '4px',
-              margin: '10px 30px',
-              padding: '5px',
-              boxShadow: '5px 5px 5px #888888',
-            }}
+            className={styles.checklist}
           >
             <Form.Check
               type="checkbox"
@@ -146,20 +129,7 @@ class PensionCalculation extends React.Component {
               checked={this.state.personalDetail.isSmoker}
               onChange={(e) => {
                 const isSmoker = e.target.checked;
-                const { personalDetail } = this.state;
-                // personalDetail.isSmoker = isSmoker;
-                this.setState(prevState => ({
-                  personalDetail: {
-                    ...prevState.personalDetail,
-                    isSmoker: isSmoker
-                  }  
-                }))
-                // checking the checkbox on click
-                // setTimeout(() => {
-                //   document.getElementById(
-                //     'smokerInput'
-                //   ).checked = !document.getElementById('smokerInput').checked;
-                // }, 100);
+                this.setPersonalDetailState('isSmoker', isSmoker)
               }}
             />
           </Form.Group>
@@ -167,37 +137,15 @@ class PensionCalculation extends React.Component {
             id="alcoholCheck"
             name="alcoholCheck"
             controlId="alcoholInput"
-            style={{
-              fontFamily: 'Arial, Helvetica, sans-serif',
-              fontWeight: 'bold',
-              borderRadius: '4px',
-              margin: '10px 30px',
-              padding: '5px',
-              boxShadow: '5px 5px 5px #888888',
-            }}
+            className={styles.checklist}
           >
             <Form.Check
               type="checkbox"
               label="Do you have history of issue with alcohol?"
               checked={this.state.personalDetail.isDrinker}
               onChange={(e) => {
-                // const isDrinker = e.target.value === 'on';
                 const isDrinker = e.target.checked;
-                const { personalDetail } = this.state;
-                this.setState(prevState => ({
-                  personalDetail: {
-                    ...prevState.personalDetail,
-                    isDrinker: isDrinker
-                  }  
-                }))
-                // personalDetail.isDrinker = isDrinker;
-
-                // checking the checkbox on click
-                // setTimeout(() => {
-                //   document.getElementById(
-                //     'alcoholInput'
-                //   ).checked = !document.getElementById('alcoholInput').checked;
-                // }, 100);
+                this.setPersonalDetailState('isDrinker', isDrinker);
               }}
             />
           </Form.Group>
@@ -205,38 +153,16 @@ class PensionCalculation extends React.Component {
             id="terminalIllnessCheck"
             name="terminalIllnessCheck"
             controlId="terminalIllnessInput"
-            style={{
-              fontFamily: 'Arial, Helvetica, sans-serif',
-              fontWeight: 'bold',
-              borderRadius: '4px',
-              margin: '10px 30px',
-              padding: '5px',
-              boxShadow: '5px 5px 5px #888888',
-            }}
+            className={styles.checklist}
           >
             <Form.Check
               type="checkbox"
               label="Do you have terminal illness (eg. final stage of cancer)?"
               checked={this.state.personalDetail.isTerminallyIll}
               onChange={(e) => {
-                // const isTerminallyIll = e.target.value === 'on';
                 const isTerminallyIll = e.target.checked;
-                const { personalDetail } = this.state;
-                // personalDetail.isTerminallyIll = isTerminallyIll;
-
-                this.setState(prevState => ({
-                  personalDetail: {
-                    ...prevState.personalDetail,
-                    isTerminallyIll: isTerminallyIll
-                  }  
-                }))
-                // checking the checkbox on click
-                // setTimeout(() => {
-                //   document.getElementById(
-                //     'terminalIllnessInput'
-                //   ).checked = !document.getElementById('terminalIllnessInput')
-                //     .checked;
-                // }, 100);
+                this.setPersonalDetailState('isTerminallyIll', isTerminallyIll);
+                
               }}
             />
           </Form.Group>
