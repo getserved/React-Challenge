@@ -19,7 +19,7 @@ export const getDoctors = () => {
 export const getExchangeRates = () => {
   return axios.get(
     'https://api.coingecko.com/api/v3/exchange_rates?currency=aud'
-  );
+  )
 };
 
 /**

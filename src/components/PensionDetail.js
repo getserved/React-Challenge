@@ -25,16 +25,54 @@ class PensionCalculation extends React.Component {
       isDrinker: false,
       isTerminallyIll: false,
     },
+    travellingData: {
+      doctors: null,
+      exchangeRates: null,
+      exchangeRateTime: null
+    }
   };
 
-  componentDidMount = () => {console.log("styles", styles)};
+  async componentDidMount() {
+    try{
+      console.log("start api");
+      let exchangeRatesData = await api.getExchangeRates()
+      let exchangeRateTimeData = await api.getExchangeRateTime();
+      let doctorsData = await api.getDoctors();
+
+      let exchangeRates = exchangeRatesData.data.rates;
+      let exchangeRateTime = exchangeRateTimeData.data.data;
+      let doctors = doctorsData.data.results;
+
+      this.setState(prevState => ({
+        ...prevState.personalDetail,
+        travellingData: {
+          ...prevState.travellingData,
+          doctors: doctors,
+          exchangeRates: [],
+          exchangeRateTime: formatDateTime(exchangeRateTime.epoch),
+        }
+      }))
+    }catch(e){
+      console.log(e);
+    }
+    
+
+
+  };
 
   componentDidUpdate(prevProps, prevState) {}
 
   submitRequest = () => {
     try {
-      api.submitRequest(this.state);
-      return 'submission ok';
+      api.submitRequest(this.state)
+      .then((res) => {
+        console.log("submission ok");
+        return 'submission ok';
+      })
+      .catch((error) => {
+
+      });
+      
     } catch (e) {
       handleError(e);
     }
@@ -63,11 +101,6 @@ class PensionCalculation extends React.Component {
     // TODO: use useGetTravellingData() to retrieve travelling data.
     // Below code is commented out, compilation error, use mock data for now.
     // const travellingData = useGetTravellingData();
-    const travellingData = {
-      doctors: mockDoctors.results,
-      exchangeRates: getSupportedCurrencies(mockExchangeRates.rates),
-      exchangeRateTime: formatDateTime(mockExchangeRateTime.epoch),
-    };
 
     // TODO: returned markup is too long, can we do something about them?
     // Hint: Repeated checkboxes and styling, split markups into components
@@ -237,7 +270,7 @@ class PensionCalculation extends React.Component {
                     </Card.Title>
                     <Card.Text>
                       <div>
-                        {(travellingData.doctors || []).map((doctor, index) => (
+                        {(this.state.travellingData.doctors || []).map((doctor, index) => (
                           <div
                             key={index}
                             style={{ width: '20%', float: 'left' }}
@@ -269,20 +302,20 @@ class PensionCalculation extends React.Component {
                     <Card.Title>Exchange rates</Card.Title>
                     <Card.Text>
                       <div style={{ display: 'block' }}>
-                        {travellingData.exchangeRates.map(
+                        {(this.state.travellingData.exchangeRates || []).map(
                           (exchangeRate, index) => (
                             <div
                               key={index}
                               style={{ width: '20%', float: 'left' }}
                             >
-                              <p>{exchangeRate.name}</p>
-                              <p>{exchangeRate.value}</p>
+                              <p>{exchangeRate}</p>
+                              <p>{exchangeRate}</p>
                             </div>
                           )
                         )}
                       </div>
                       <div style={{ clear: 'both', display: 'block' }}>
-                        Last updated: {travellingData.exchangeRateTime}
+                        Last updated: {this.state.travellingData.exchangeRateTime}
                       </div>
                     </Card.Text>
                   </Card.Body>
