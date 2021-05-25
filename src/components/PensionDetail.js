@@ -22,7 +22,7 @@ function PensionCalculation() {
   const [personalDetail, setPersonalDetail] = useState({
     name: "",
     age: "",
-    amount: 0,
+    amount: "",
     isSmoker: false,
     isDrinker: false,
     isTerminallyIll: false
@@ -49,6 +49,7 @@ function PensionCalculation() {
   };
 
   const setPersonalDetailState = (key, value) => {
+
     setPersonalDetail(prevState => ({
         ...prevState,
         [key]: value
@@ -58,8 +59,7 @@ function PensionCalculation() {
   const addError = (id, error) => {
     if (document.getElementById(id).children.length > 2) {
       const field = document.getElementById(id);
-      console.log("field", field)
-      // field.removeChild(field.childNodes[2]);
+      field.removeChild(field.childNodes[2]);
     }
 
     document.getElementById(id).innerHTML +=
@@ -79,6 +79,11 @@ function PensionCalculation() {
       addError('amount', 'Empty amount');
       hasError = true;
     }
+    console.log("amount", personalDetail.amount,/^\d+$/.test(personalDetail.amount))
+    if(!/^\d+$/.test(personalDetail.amount)){
+      addError('amount', 'Only Numbers are allowed');
+      hasError = true;
+    }
     if (personalDetail.age === '') {
       addError('age', 'Empty age');
       hasError = true;
@@ -89,7 +94,7 @@ function PensionCalculation() {
       try {
         submitRequest().then(() => {
           alert("submission ok");
-          resetForm(event.target);
+          //resetForm(event.target);
         })
         .catch((e) => {
           alert(e);
@@ -116,6 +121,7 @@ function PensionCalculation() {
               type="text"
               placeholder="Enter name"
               onChange={(e) => {
+                console.log("name changed")
                 const name = e.target.value;
                 setPersonalDetailState('name', name);
               }}
@@ -128,6 +134,7 @@ function PensionCalculation() {
               type="text"
               placeholder="Enter amount"
               onChange={(e) => {
+                console.log("amount changed")
                 const amount = e.target.value;
                 setPersonalDetailState('amount', amount);
               }}
@@ -240,7 +247,7 @@ function PensionCalculation() {
                       <p>International doctors</p>
                     </Card.Title>
                     <Card.Body>
-                      <div>
+                      <div className={styles.listContainer}>
                         {(travellingData.doctors || []).map((doctor, index) => (
                           <div
                             key={index}
@@ -271,16 +278,19 @@ function PensionCalculation() {
                   <Card.Body>
                     <Card.Title>Exchange rates</Card.Title>
                     <Card.Body>
-                      <div style={{ display: 'block' }}>
+                      <div className={styles.listContainer}>
                         {(travellingData.exchangeRates || []).map((exchangeRate, index) => (
                             <div
                               key={index}
-                              className={styles.cardContainer}
+                              className={styles.cellContainer}
                             >
-                              <p>{exchangeRate.name}</p>
-                              <p>{exchangeRate.type}</p>
-                              <p>{exchangeRate.unit}</p>
-                              <p>{exchangeRate.value}</p>
+                              <Card>
+                                <p>{exchangeRate.name}</p>
+                                <p>{exchangeRate.type}</p>
+                                <p>{exchangeRate.unit}</p>
+                                <p>{exchangeRate.value}</p>
+                              </Card>
+                              
                             </div>
                           )
                         )}
