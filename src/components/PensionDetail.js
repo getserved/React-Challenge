@@ -1,4 +1,5 @@
 import React from 'react';
+import { useState } from 'react';
 import Container from 'react-bootstrap/Container';
 import Card from 'react-bootstrap/Card';
 import Accordion from 'react-bootstrap/Accordion';
@@ -15,56 +16,23 @@ import {
 } from '../__mock';
 
 // TODO: need major refactoring
-class PensionCalculation extends React.Component {
-  state = {
-    personalDetail: {
-      name: '',
-      amount: '',
-      age: '',
-      isSmoker: false,
-      isDrinker: false,
-      isTerminallyIll: false,
-    },
-    travellingData: {
-      doctors: null,
-      exchangeRates: null,
-      exchangeRateTime: null
-    }
-  };
+function PensionCalculation() {
+ 
+  const travellingData = useGetTravellingData();
+  const [personalDetail, setPersonalDetail] = useState({
+    name: "",
+    age: "",
+    amount: 0,
+    isSmoker: false,
+    isDrinker: false,
+    isTerminallyIll: false
+  });
 
-  async componentDidMount() {
-    try{
-      console.log("start api");
-      let exchangeRatesData = await api.getExchangeRates()
-      let exchangeRateTimeData = await api.getExchangeRateTime();
-      let doctorsData = await api.getDoctors();
+  
 
-      let exchangeRates = exchangeRatesData.data.rates;
-      let exchangeRateTime = exchangeRateTimeData.data.data;
-      let doctors = doctorsData.data.results;
-
-      this.setState(prevState => ({
-        ...prevState.personalDetail,
-        travellingData: {
-          ...prevState.travellingData,
-          doctors: doctors,
-          exchangeRates: [],
-          exchangeRateTime: formatDateTime(exchangeRateTime.epoch),
-        }
-      }))
-    }catch(e){
-      console.log(e);
-    }
-    
-
-
-  };
-
-  componentDidUpdate(prevProps, prevState) {}
-
-  submitRequest = () => {
+  const submitRequest = () => {
     try {
-      api.submitRequest(this.state)
+      api.submitRequest(personalDetail)
       .then((res) => {
         console.log("submission ok");
         return 'submission ok';
@@ -78,32 +46,25 @@ class PensionCalculation extends React.Component {
     }
   };
 
-  setPersonalDetailState = (key, value) => {
-    this.setState(prevState => ({
-      personalDetail: {
-        ...prevState.personalDetail,
+  const setPersonalDetailState = (key, value) => {
+    setPersonalDetail(prevState => ({
+        ...prevState,
         [key]: value
-      }  
     }))
-  }
+  };
 
-  addError = (id, error) => {
+  const addError = (id, error) => {
     if (document.getElementById(id).children.length > 2) {
       const field = document.getElementById(id);
-      field.removeChild(field.childNodes[2]);
+      console.log("field", field)
+      // field.removeChild(field.childNodes[2]);
     }
 
     document.getElementById(id).innerHTML +=
-      '<p style="color: red;font-weight: bold;">' + error + '</p>';
+      '<div class="error">' + error + '</div>';
   };
 
-  render() {
-    // TODO: use useGetTravellingData() to retrieve travelling data.
-    // Below code is commented out, compilation error, use mock data for now.
-    // const travellingData = useGetTravellingData();
-
-    // TODO: returned markup is too long, can we do something about them?
-    // Hint: Repeated checkboxes and styling, split markups into components
+  
     return (
       <Container>
         <div>
@@ -117,7 +78,7 @@ class PensionCalculation extends React.Component {
               placeholder="Enter name"
               onChange={(e) => {
                 const name = e.target.value;
-                this.setPersonalDetailState('name', name);
+                setPersonalDetailState('name', name);
               }}
             />
           </Form.Group>
@@ -129,7 +90,7 @@ class PensionCalculation extends React.Component {
               placeholder="Enter amount"
               onChange={(e) => {
                 const amount = e.target.value;
-                this.setPersonalDetailState('amount', amount);
+                setPersonalDetailState('amount', amount);
               }}
             />
           </Form.Group>
@@ -141,7 +102,7 @@ class PensionCalculation extends React.Component {
               defaultValue="Choose..."
               onChange={(e) => {
                 const age = e.target.value;
-                this.setPersonalDetailState('age', age);
+                setPersonalDetailState('age', age);
               }}
             >
               <option>Choose...</option>
@@ -159,10 +120,10 @@ class PensionCalculation extends React.Component {
             <Form.Check
               type="checkbox"
               label="Are you a smoker?"
-              checked={this.state.personalDetail.isSmoker}
+              checked={personalDetail.isSmoker}
               onChange={(e) => {
                 const isSmoker = e.target.checked;
-                this.setPersonalDetailState('isSmoker', isSmoker)
+                setPersonalDetailState('isSmoker', isSmoker)
               }}
             />
           </Form.Group>
@@ -175,10 +136,10 @@ class PensionCalculation extends React.Component {
             <Form.Check
               type="checkbox"
               label="Do you have history of issue with alcohol?"
-              checked={this.state.personalDetail.isDrinker}
+              checked={personalDetail.isDrinker}
               onChange={(e) => {
                 const isDrinker = e.target.checked;
-                this.setPersonalDetailState('isDrinker', isDrinker);
+                setPersonalDetailState('isDrinker', isDrinker);
               }}
             />
           </Form.Group>
@@ -191,10 +152,10 @@ class PensionCalculation extends React.Component {
             <Form.Check
               type="checkbox"
               label="Do you have terminal illness (eg. final stage of cancer)?"
-              checked={this.state.personalDetail.isTerminallyIll}
+              checked={personalDetail.isTerminallyIll}
               onChange={(e) => {
                 const isTerminallyIll = e.target.checked;
-                this.setPersonalDetailState('isTerminallyIll', isTerminallyIll);
+                setPersonalDetailState('isTerminallyIll', isTerminallyIll);
                 
               }}
             />
@@ -210,27 +171,27 @@ class PensionCalculation extends React.Component {
 
                 // TODO: Fix the Validations
                 let hasError = false;
-                if (this.state.personalDetail.name === '') {
-                  this.addError('name', 'Empty name');
+                if (personalDetail.name === '') {
+                  addError('name', 'Empty name');
                   hasError = true;
                 }
-                if (this.state.personalDetail.amount === '') {
-                  this.addError('amount', 'Empty amount');
+                if (personalDetail.amount === '') {
+                  addError('amount', 'Empty amount');
                   hasError = true;
                 }
-                if (this.state.personalDetail.age === '') {
-                  this.addError('age', 'Empty age');
+                if (personalDetail.age === '') {
+                  addError('age', 'Empty age');
                   hasError = true;
                 }
-
+                console.log("has error", hasError);
                 if (hasError) {
                   return;
                 }
 
                 // TODO: success notice shows before submission completes
                 try {
-                  const res = this.submitRequest();
-                  alert(res);
+                  //const res = this.submitRequest();
+                  //alert(res);
                 } catch (e) {
                   // TODO: not returning correct error message, if any
                   alert(e);
@@ -268,9 +229,9 @@ class PensionCalculation extends React.Component {
                     <Card.Title>
                       <p>International doctors</p>
                     </Card.Title>
-                    <Card.Text>
+                    <Card.Body>
                       <div>
-                        {(this.state.travellingData.doctors || []).map((doctor, index) => (
+                        {(travellingData.doctors || []).map((doctor, index) => (
                           <div
                             key={index}
                             style={{ width: '20%', float: 'left' }}
@@ -281,17 +242,16 @@ class PensionCalculation extends React.Component {
                                 src={doctor.picture.large}
                               />
                               <Card.Body>
-                                <Card.Text>
-                                  <a
+                                  <Card.Link
                                     href={`mailto: {doctor.email}`}
-                                  >{`${doctor.name.title} ${doctor.name.first} ${doctor.name.last} (${doctor.nat})`}</a>
-                                </Card.Text>
+                                  >{`${doctor.name.title} ${doctor.name.first} ${doctor.name.last} (${doctor.nat})`}
+                                  </Card.Link>
                               </Card.Body>
                             </Card>
                           </div>
                         ))}
                       </div>
-                    </Card.Text>
+                    </Card.Body>
                   </Card.Body>
                 </Card>
 
@@ -300,24 +260,25 @@ class PensionCalculation extends React.Component {
                 <Card style={{ width: '100%' }}>
                   <Card.Body>
                     <Card.Title>Exchange rates</Card.Title>
-                    <Card.Text>
+                    <Card.Body>
                       <div style={{ display: 'block' }}>
-                        {(this.state.travellingData.exchangeRates || []).map(
-                          (exchangeRate, index) => (
+                        {(travellingData.exchangeRates || []).map((exchangeRate, index) => (
                             <div
                               key={index}
                               style={{ width: '20%', float: 'left' }}
                             >
-                              <p>{exchangeRate}</p>
-                              <p>{exchangeRate}</p>
+                              <p>{exchangeRate.name}</p>
+                              <p>{exchangeRate.type}</p>
+                              <p>{exchangeRate.unit}</p>
+                              <p>{exchangeRate.value}</p>
                             </div>
                           )
                         )}
                       </div>
                       <div style={{ clear: 'both', display: 'block' }}>
-                        Last updated: {this.state.travellingData.exchangeRateTime}
+                        Last updated: {travellingData.exchangeRateTime}
                       </div>
-                    </Card.Text>
+                      </Card.Body>
                   </Card.Body>
                 </Card>
               </Card.Body>
@@ -326,7 +287,7 @@ class PensionCalculation extends React.Component {
         </Accordion>
       </Container>
     );
-  }
+  
 }
 
 export default PensionCalculation;
