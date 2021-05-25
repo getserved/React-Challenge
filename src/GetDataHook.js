@@ -8,13 +8,13 @@ import { mockDoctors, mockExchangeRates, mockExchangeRateTime } from './__mock';
  * @author Jackie
  * @returns return travelling data from server, or empty values.
  */
-const useGetTravellingData = () => {
+export const useGetTravellingData = () => {
 
   // Mock data is used until we can get data from server
   const [data, setData] = useState({
     doctors: [],
     exchangeRates: [],
-    exchangeRateTime: null,
+    exchangeRateTime: '',
   });
 
   useEffect(async () => {

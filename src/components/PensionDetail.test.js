@@ -1,6 +1,10 @@
 import PensionDetail from './PensionDetail';
 import renderer from 'react-test-renderer';
-import useGetTravellingData from '../GetDataHook';
+import {useGetTravellingData} from '../GetDataHook';
+
+jest.mock("../GetDataHook", () => ({
+  useGetTravellingData: jest.fn(),
+}));
 
 describe('PensionDetail', () => {
   it('renders correctly', () => {

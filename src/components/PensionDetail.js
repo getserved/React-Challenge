@@ -1,11 +1,13 @@
 import React from 'react';
 import { useState } from 'react';
 import Container from 'react-bootstrap/Container';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
 import Card from 'react-bootstrap/Card';
 import Accordion from 'react-bootstrap/Accordion';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
-import useGetTravellingData from '../GetDataHook';
+import {useGetTravellingData} from '../GetDataHook';
 import { formatDateTime, getSupportedCurrencies, handleError } from '../utils';
 import * as api from '../api';
 import styles from '../pension.module.css';
@@ -16,7 +18,7 @@ import {
 } from '../__mock';
 
 // TODO: need major refactoring
-function PensionCalculation() {
+function PensionDetail() {
  
   const travellingData = useGetTravellingData();
   const [personalDetail, setPersonalDetail] = useState({
@@ -27,6 +29,14 @@ function PensionCalculation() {
     isDrinker: false,
     isTerminallyIll: false
   });
+  const [errors, setErrors] = useState({
+    name: false,
+    age: false,
+    amount: false,
+    isSmoker: false,
+    isDrinker: false,
+    isTerminallyIll: false
+  })
 
   const resetForm = (el) => {
     const form = el.closest("form");
@@ -35,15 +45,17 @@ function PensionCalculation() {
 
   const submitRequest = () => {
     try {
+      console.log("submit detail", personalDetail);
       return api.submitRequest(personalDetail)
       .then((res) => {
         return res;
       })
       .catch((error) => {
-        return error;
+        throw new Error(error);
       });
       
     } catch (e) {
+      console.log("handle error")
       handleError(e);
     }
   };
@@ -56,40 +68,67 @@ function PensionCalculation() {
     }))
   };
 
-  const addError = (id, error) => {
-    if (document.getElementById(id).children.length > 2) {
-      const field = document.getElementById(id);
-      field.removeChild(field.childNodes[2]);
-    }
-
-    document.getElementById(id).innerHTML +=
-      '<div class="error">' + error + '</div>';
-  };
-
-  const handleSubmit = (event) => {
+  const validation = () => {
     // TODO: Browser page should not refresh/reload when the button is clicked
 
     // TODO: Fix the Validations
     let hasError = false;
     if (personalDetail.name === '') {
-      addError('name', 'Empty name');
+      setErrors(prevState => ({
+          ...prevState,
+          name: 'Empty name'
+      }))
+      //addError('name', 'Empty name');
       hasError = true;
+    }else{
+      setErrors(prevState => ({
+        ...prevState,
+        name: false
+    }))
     }
     if (personalDetail.amount === '') {
-      addError('amount', 'Empty amount');
+      setErrors(prevState => ({
+        ...prevState,
+        amount: 'Empty amount'
+    }))
+      //addError('amount', 'Empty amount');
       hasError = true;
+    }else{
+      if(!/^\d+$/.test(personalDetail.amount)){
+        setErrors(prevState => ({
+            ...prevState,
+            amount: 'Only Numbers are allowed'
+        }))
+        //addError('amount', 'Only Numbers are allowed');
+        hasError = true;
+      }else{
+          setErrors(prevState => ({
+            ...prevState,
+            amount: false
+          }))
+      }
     }
-    console.log("amount", personalDetail.amount,/^\d+$/.test(personalDetail.amount))
-    if(!/^\d+$/.test(personalDetail.amount)){
-      addError('amount', 'Only Numbers are allowed');
-      hasError = true;
-    }
+   
+    
     if (personalDetail.age === '') {
-      addError('age', 'Empty age');
+      setErrors(prevState => ({
+        ...prevState,
+        age: 'Empty age'
+    }))
+      // addError('age', 'Empty age');
       hasError = true;
+    }else{
+        setErrors(prevState => ({
+          ...prevState,
+          age: false
+      }))
     }
-    console.log("has error:", hasError)
-    if(!hasError){
+    return hasError;
+  }
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    if(!validation()){
       // TODO: success notice shows before submission completes
       try {
         submitRequest().then(() => {
@@ -105,8 +144,7 @@ function PensionCalculation() {
         alert(e);
       }
     }
-    event.preventDefault();
-    return !hasError;
+    
   }
   
     return (
@@ -115,37 +153,46 @@ function PensionCalculation() {
           <h2>Pension detail</h2>
         </div>
         <Form onSubmit={handleSubmit}>
-          <Form.Group id="name" controlId="nameInput">
+          <Form.Group id="name" className={styles.formGroup} controlId="nameInput">
             <Form.Label>Name*</Form.Label>
             <Form.Control
               type="text"
               placeholder="Enter name"
+              isInvalid={!!errors.name}
               onChange={(e) => {
                 console.log("name changed")
                 const name = e.target.value;
                 setPersonalDetailState('name', name);
               }}
             />
+            <Form.Control.Feedback className={styles.formError} type="invalid" tooltip>
+            {errors.name}
+            </Form.Control.Feedback>
           </Form.Group>
 
-          <Form.Group id="amount" controlId="amountInput">
+          <Form.Group id="amount" className={styles.formGroup} controlId="amountInput">
             <Form.Label>Insured Amount*</Form.Label>
             <Form.Control
               type="text"
               placeholder="Enter amount"
+              isInvalid={!!errors.amount}
               onChange={(e) => {
                 console.log("amount changed")
                 const amount = e.target.value;
                 setPersonalDetailState('amount', amount);
               }}
             />
+            <Form.Control.Feedback className={styles.formError} type="invalid" tooltip>
+              {errors.amount}
+            </Form.Control.Feedback>
           </Form.Group>
 
-          <Form.Group id="age" controlId="ageInput">
+          <Form.Group id="age" className={styles.formGroup} controlId="ageInput">
             <Form.Label>Age*</Form.Label>
             <Form.Control
               as="select"
               defaultValue="Choose..."
+              isInvalid={!!errors.age}
               onChange={(e) => {
                 const age = e.target.value;
                 setPersonalDetailState('age', age);
@@ -156,6 +203,9 @@ function PensionCalculation() {
               <option value="41-60">Between 41 - 60</option>
               <option value="61-">Above 60</option>
             </Form.Control>
+            <Form.Control.Feedback className={styles.formError} type="invalid" tooltip>
+              {errors.age}
+            </Form.Control.Feedback>
           </Form.Group>
 
           <Form.Group
@@ -247,11 +297,10 @@ function PensionCalculation() {
                       <p>International doctors</p>
                     </Card.Title>
                     <Card.Body>
-                      <div className={styles.listContainer}>
+                      <Row>
                         {(travellingData.doctors || []).map((doctor, index) => (
-                          <div
+                          <Col xs="12" md="4" lg="2"
                             key={index}
-                            className={styles.cardContainer}
                           >
                             <Card>
                               <Card.Img
@@ -265,9 +314,9 @@ function PensionCalculation() {
                                   </Card.Link>
                               </Card.Body>
                             </Card>
-                          </div>
+                          </Col>
                         ))}
-                      </div>
+                      </Row>
                     </Card.Body>
                   </Card.Body>
                 </Card>
@@ -278,11 +327,10 @@ function PensionCalculation() {
                   <Card.Body>
                     <Card.Title>Exchange rates</Card.Title>
                     <Card.Body>
-                      <div className={styles.listContainer}>
+                      <Row>
                         {(travellingData.exchangeRates || []).map((exchangeRate, index) => (
-                            <div
+                            <Col xs="12" lg="4"
                               key={index}
-                              className={styles.cellContainer}
                             >
                               <Card>
                                 <p>{exchangeRate.name}</p>
@@ -291,10 +339,10 @@ function PensionCalculation() {
                                 <p>{exchangeRate.value}</p>
                               </Card>
                               
-                            </div>
+                            </Col>
                           )
                         )}
-                      </div>
+                      </Row>
                       <div className={styles.block}>
                         Last updated: {travellingData.exchangeRateTime}
                       </div>
@@ -310,4 +358,4 @@ function PensionCalculation() {
   
 }
 
-export default PensionCalculation;
+export default PensionDetail;
