@@ -27,7 +27,6 @@ const useGetTravellingData = () => {
       exchangeRates: getSupportedCurrencies(exchangeRates.data.rates),
       exchangeRateTime: formatDateTime(exchangeRateTime.epoch)
     }
-    console.log("result", result)
     setData(result);
   }, []);
   // TODO: get doctors, exchange rates, and exchange rate time from server

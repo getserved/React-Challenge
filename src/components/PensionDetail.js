@@ -28,17 +28,19 @@ function PensionCalculation() {
     isTerminallyIll: false
   });
 
-  
+  const resetForm = (el) => {
+    const form = el.closest("form");
+    form.reset();
+  }
 
   const submitRequest = () => {
     try {
-      api.submitRequest(personalDetail)
+      return api.submitRequest(personalDetail)
       .then((res) => {
-        console.log("submission ok");
-        return 'submission ok';
+        return res;
       })
       .catch((error) => {
-
+        return error;
       });
       
     } catch (e) {
@@ -64,13 +66,50 @@ function PensionCalculation() {
       '<div class="error">' + error + '</div>';
   };
 
+  const handleSubmit = (event) => {
+    // TODO: Browser page should not refresh/reload when the button is clicked
+
+    // TODO: Fix the Validations
+    let hasError = false;
+    if (personalDetail.name === '') {
+      addError('name', 'Empty name');
+      hasError = true;
+    }
+    if (personalDetail.amount === '') {
+      addError('amount', 'Empty amount');
+      hasError = true;
+    }
+    if (personalDetail.age === '') {
+      addError('age', 'Empty age');
+      hasError = true;
+    }
+    console.log("has error:", hasError)
+    if(!hasError){
+      // TODO: success notice shows before submission completes
+      try {
+        submitRequest().then(() => {
+          alert("submission ok");
+          resetForm(event.target);
+        })
+        .catch((e) => {
+          alert(e);
+        });
+      
+      } catch (e) {
+        // TODO: not returning correct error message, if any
+        alert(e);
+      }
+    }
+    event.preventDefault();
+    return !hasError;
+  }
   
     return (
       <Container>
         <div>
           <h2>Pension detail</h2>
         </div>
-        <Form>
+        <Form onSubmit={handleSubmit}>
           <Form.Group id="name" controlId="nameInput">
             <Form.Label>Name*</Form.Label>
             <Form.Control
@@ -166,43 +205,14 @@ function PensionCalculation() {
               id="submit"
               type="submit"
               variant="primary"
-              onClick={(e) => {
-                // TODO: Browser page should not refresh/reload when the button is clicked
-
-                // TODO: Fix the Validations
-                let hasError = false;
-                if (personalDetail.name === '') {
-                  addError('name', 'Empty name');
-                  hasError = true;
-                }
-                if (personalDetail.amount === '') {
-                  addError('amount', 'Empty amount');
-                  hasError = true;
-                }
-                if (personalDetail.age === '') {
-                  addError('age', 'Empty age');
-                  hasError = true;
-                }
-                console.log("has error", hasError);
-                if (hasError) {
-                  return;
-                }
-
-                // TODO: success notice shows before submission completes
-                try {
-                  //const res = this.submitRequest();
-                  //alert(res);
-                } catch (e) {
-                  // TODO: not returning correct error message, if any
-                  alert(e);
-                }
-              }}
+             
             >
               Submit
             </Button>{' '}
             <Button
               variant="secondary"
               onClick={(e) => {
+                resetForm(e.target);
                 // TODO: clear form when clicked
               }}
             >
@@ -224,7 +234,7 @@ function PensionCalculation() {
               <Card.Body>
                 {/* TODO: Use Bootstrap to allow responsive look-and-feel */}
                 {/* A row to display 6 doctors on large, 3 on medium, 1 on small screen */}
-                <Card style={{ width: '100%' }}>
+                <Card className={styles.wFull}>
                   <Card.Body>
                     <Card.Title>
                       <p>International doctors</p>
@@ -234,7 +244,7 @@ function PensionCalculation() {
                         {(travellingData.doctors || []).map((doctor, index) => (
                           <div
                             key={index}
-                            style={{ width: '20%', float: 'left' }}
+                            className={styles.cardContainer}
                           >
                             <Card>
                               <Card.Img
@@ -257,7 +267,7 @@ function PensionCalculation() {
 
                 {/* TODO: Use Bootstrap to allow responsive look-and-feel */}
                 {/* A row to display 3 rates on large, 1 on small screen */}
-                <Card style={{ width: '100%' }}>
+                <Card className={styles.wFull}>
                   <Card.Body>
                     <Card.Title>Exchange rates</Card.Title>
                     <Card.Body>
@@ -265,7 +275,7 @@ function PensionCalculation() {
                         {(travellingData.exchangeRates || []).map((exchangeRate, index) => (
                             <div
                               key={index}
-                              style={{ width: '20%', float: 'left' }}
+                              className={styles.cardContainer}
                             >
                               <p>{exchangeRate.name}</p>
                               <p>{exchangeRate.type}</p>
@@ -275,7 +285,7 @@ function PensionCalculation() {
                           )
                         )}
                       </div>
-                      <div style={{ clear: 'both', display: 'block' }}>
+                      <div className={styles.block}>
                         Last updated: {travellingData.exchangeRateTime}
                       </div>
                       </Card.Body>

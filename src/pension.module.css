@@ -10,3 +10,15 @@
     color: red;
     font-weight: bold;
 }
+
+.wFull{
+    width: 100%;
+}
+.cardContainer{
+    width: 20%;
+    float: left;
+}
+.block{
+    clear: both;
+    display: block;
+}
